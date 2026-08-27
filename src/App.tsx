@@ -25,6 +25,15 @@ export default function App() {
   const [preloaderGone, setPreloaderGone] = useState(reduced);
   const [admin, setAdmin] = useState(() => window.location.hash === "#/admin");
 
+  /* Referral code, resolved during render so the registration form is already
+     pre-filled on the very first paint of a /?ref=STAR-XXXXX smart link.
+     Reading it from an effect would be too late — children render first.    */
+  const [refCode] = useState(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("ref");
+    const stored = sessionStorage.getItem("star_ref");
+    return (fromUrl || stored || "").trim().toUpperCase();
+  });
+
   /* hash route: #/admin → staff console */
   useEffect(() => {
     const onHash = () => setAdmin(window.location.hash === "#/admin");
@@ -32,18 +41,17 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  /* smart-link attribution: /?ref=STAR-XXXXX */
+  /* smart-link attribution: /?ref=STAR-XXXXX — side effects only.
+     The code itself was already resolved into `refCode` above.              */
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const ref = params.get("ref");
-    if (ref) {
-      const code = ref.trim().toUpperCase();
-      sessionStorage.setItem("star_ref", code);
-      void logClick(code, window.location.pathname + window.location.search);
-      toast(`⭐ You were referred by a current Star family — code ${code} is pre-filled below.`);
-      window.history.replaceState({}, "", window.location.pathname + window.location.hash);
-    }
-  }, []);
+    if (!new URLSearchParams(window.location.search).has("ref") || !refCode) return;
+    sessionStorage.setItem("star_ref", refCode);
+    void logClick(refCode, window.location.pathname + window.location.search);
+    toast(`⭐ You were referred by a current Star family — code ${refCode} is pre-filled below.`);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("ref");
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+  }, [refCode]);
 
   /* Lenis smooth scroll wired into GSAP ScrollTrigger */
   useEffect(() => {
@@ -102,7 +110,7 @@ export default function App() {
             <Programs />
             <Gallery />
             <Admissions />
-            <Ambassador />
+            <Ambassador refCode={refCode} />
             <Testimonials />
             <Contact />
           </main>

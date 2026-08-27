@@ -280,8 +280,7 @@ function AmbassadorPanel() {
 }
 
 /* ---------------- registration form (referred parents) ---------------- */
-function RegisterPanel() {
-  const refCode = sessionStorage.getItem("star_ref") || "";
+function RegisterPanel({ refCode }: { refCode: string }) {
   const [form, setForm] = useState({ parent: "", phone: "", child: "", klass: "", code: refCode, consent: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -412,7 +411,7 @@ function RegisterPanel() {
 }
 
 /* ---------------- section ---------------- */
-export default function Ambassador() {
+export default function Ambassador({ refCode = "" }: { refCode?: string }) {
   return (
     <section id="ambassador" className="beams relative overflow-hidden bg-navy" aria-label="Parent Ambassador referral programme">
       <StarSparkles count={14} />
@@ -475,7 +474,7 @@ export default function Ambassador() {
               <AmbassadorPanel />
             </Reveal>
             <Reveal delay={0.2} y={50}>
-              <RegisterPanel />
+              <RegisterPanel refCode={refCode} />
             </Reveal>
           </div>
         </div>
