@@ -419,6 +419,49 @@ section {
 }
 
 /* ---------- reduced motion ---------- */
+/* ---------- join modal: phone bottom sheet ----------
+   The sheet is always full height and sits partly below the fold; the peek
+   state is a transform, not a height change, so the drag can follow the
+   finger and settle without relayout.                                    */
+.join-sheet {
+  height: min(94svh, 100svh - 0.75rem);
+  /* percentage translate resolves against the sheet's own height, so the
+     peek needs no measuring and is correct on the very first paint */
+  transform: translateY(34%);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.join-sheet.is-expanded {
+  transform: translateY(0);
+}
+.join-sheet.is-dragging {
+  transition: none;
+}
+/* the grab area must not also pan the page */
+.join-grip {
+  touch-action: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .join-sheet {
+    transition: none;
+  }
+}
+
+/* ---------- join modal: size to the *visible* phone viewport ----------
+   position:fixed inset-0 resolves against the large viewport, so on a phone
+   showing its URL bar the foot of the modal sits behind browser chrome.
+   100svh is the smallest (chrome-expanded) height, so the panel is always
+   fully on screen; the safe-area insets keep it clear of the home indicator. */
+.join-dialog {
+  height: 100svh;
+  padding-block: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-bottom));
+}
+@media (min-width: 640px) {
+  .join-dialog {
+    padding-block: 2rem;
+  }
+}
+
 /* ---------- join modal: touch scrolling for the form body ----------
    Lenis is told to ignore this subtree (data-lenis-prevent) so the
    browser scrolls it natively; these keep that feeling right on touch.  */
