@@ -81,6 +81,7 @@ export default function JoinModal({ refCode, ready }: { refCode: string; ready: 
       role="dialog"
       aria-modal="true"
       aria-labelledby="join-modal-title"
+      data-lenis-prevent
       onMouseDown={(e) => {
         /* Backdrop only — never a drag that started inside the panel. */
         if (!panelRef.current?.contains(e.target as Node)) close();
@@ -146,7 +147,8 @@ export default function JoinModal({ refCode, ready }: { refCode: string; ready: 
           role="tabpanel"
           aria-labelledby={`join-tab-${tab}`}
           tabIndex={0}
-          className="mt-3.5 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl"
+          data-lenis-prevent
+          className="join-scroll mt-3.5 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl"
         >
           {tab === "register" ? (
             <RegisterPanel refCode={refCode} idPrefix="m-" />

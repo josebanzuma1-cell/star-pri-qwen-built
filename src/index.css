@@ -419,6 +419,15 @@ section {
 }
 
 /* ---------- reduced motion ---------- */
+/* ---------- join modal: touch scrolling for the form body ----------
+   Lenis is told to ignore this subtree (data-lenis-prevent) so the
+   browser scrolls it natively; these keep that feeling right on touch.  */
+.join-scroll {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+}
+
 /* ---------- programs: keep every card fully inside the pinned viewport ----------
    The section is pinned, so its height is the viewport height and anything
    taller is cut off by overflow:hidden. Spacing is therefore driven by vh so
