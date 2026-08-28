@@ -60,7 +60,11 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 }
 
 /* ---------------- ambassador signup / dashboard ---------------- */
-function AmbassadorPanel() {
+export function AmbassadorPanel({ idPrefix = "" }: { idPrefix?: string }) {
+  /* A second copy of this panel renders inside the join modal. Ids must be
+     unique per instance or labels and aria-describedby point at the wrong
+     instance's fields. */
+  const fid = (n: string) => idPrefix + n;
   const [amb, setAmb] = useState<Ambassador | null>(null);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", child: "", klass: "", consent: false });
@@ -69,16 +73,22 @@ function AmbassadorPanel() {
   const [qr, setQr] = useState("");
 
   useEffect(() => {
-    try {
-      const id = sessionStorage.getItem("star:ambassador:id");
-      if (!id) return;
-      const raw = localStorage.getItem("star:ambassadors");
-      const all = raw ? JSON.parse(raw) : [];
-      const found = all.find((a: Ambassador) => a.id === id);
-      if (found) setAmb(found);
-    } catch {
-      /* ignore */
-    }
+    const hydrate = () => {
+      try {
+        const id = sessionStorage.getItem("star:ambassador:id");
+        if (!id) return setAmb(null);
+        const raw = localStorage.getItem("star:ambassadors");
+        const all = raw ? JSON.parse(raw) : [];
+        const found = all.find((a: Ambassador) => a.id === id);
+        if (found) setAmb(found);
+      } catch {
+        /* ignore */
+      }
+    };
+    hydrate();
+    /* The modal renders a second copy of this panel; keep both in step. */
+    window.addEventListener("star:data-changed", hydrate);
+    return () => window.removeEventListener("star:data-changed", hydrate);
   }, []);
 
   const refreshStats = useCallback(async (code: string) => {
@@ -114,6 +124,7 @@ function AmbassadorPanel() {
     setBusy(false);
     sessionStorage.setItem("star:ambassador:id", res.id);
     setAmb(res);
+    window.dispatchEvent(new Event("star:data-changed"));
     burst(0.3, 0.4);
     toast(res.existing ? `Welcome back! Your code is ${res.code}` : `⭐ Your ambassador code is ready: ${res.code}`);
   };
@@ -131,6 +142,7 @@ function AmbassadorPanel() {
               onClick={() => {
                 sessionStorage.removeItem("star:ambassador:id");
                 setAmb(null);
+                window.dispatchEvent(new Event("star:data-changed"));
                 toast("Signed out — demo only, your code stays saved on this device.");
               }}
               className="mono-label rounded-full border border-cream/20 px-3 py-1.5 text-[9px] text-cream/60 transition hover:border-gold hover:text-gold"
@@ -147,36 +159,36 @@ function AmbassadorPanel() {
               every family they bring to the hill. Three ways to share — all set up in a minute.
             </p>
             <div>
-              <label htmlFor="amb-name" className="mono-label mb-1.5 block text-[9.5px] text-cream/70">Your full name</label>
-              <input id="amb-name" className={`field field-dark ${errors.name ? "field-error" : ""}`} placeholder="e.g. Amina Nansubuga" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} aria-invalid={!!errors.name} aria-describedby={errors.name ? "amb-name-err" : undefined} />
-              {errors.name && <p id="amb-name-err" className="mt-1.5 text-xs text-[#ff9d9d]">{errors.name}</p>}
+              <label htmlFor={fid("amb-name")} className="mono-label mb-1.5 block text-[9.5px] text-cream/70">Your full name</label>
+              <input id={fid("amb-name")} className={`field field-dark ${errors.name ? "field-error" : ""}`} placeholder="e.g. Amina Nansubuga" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} aria-invalid={!!errors.name} aria-describedby={errors.name ? fid("amb-name-err") : undefined} />
+              {errors.name && <p id={fid("amb-name-err")} className="mt-1.5 text-xs text-[#ff9d9d]">{errors.name}</p>}
             </div>
             <div>
-              <label htmlFor="amb-phone" className="mono-label mb-1.5 block text-[9.5px] text-cream/70">WhatsApp number</label>
-              <input id="amb-phone" type="tel" className={`field field-dark ${errors.phone ? "field-error" : ""}`} placeholder="07XX XXX XXX" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} aria-invalid={!!errors.phone} aria-describedby={errors.phone ? "amb-phone-err" : undefined} />
-              {errors.phone && <p id="amb-phone-err" className="mt-1.5 text-xs text-[#ff9d9d]">{errors.phone}</p>}
+              <label htmlFor={fid("amb-phone")} className="mono-label mb-1.5 block text-[9.5px] text-cream/70">WhatsApp number</label>
+              <input id={fid("amb-phone")} type="tel" className={`field field-dark ${errors.phone ? "field-error" : ""}`} placeholder="07XX XXX XXX" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} aria-invalid={!!errors.phone} aria-describedby={errors.phone ? fid("amb-phone-err") : undefined} />
+              {errors.phone && <p id={fid("amb-phone-err")} className="mt-1.5 text-xs text-[#ff9d9d]">{errors.phone}</p>}
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="amb-child" className="mono-label mb-1.5 block text-[9.5px] text-cream/70">Child's name</label>
-                <input id="amb-child" className={`field field-dark ${errors.child ? "field-error" : ""}`} placeholder="e.g. Kirabo" value={form.child} onChange={(e) => setForm({ ...form, child: e.target.value })} aria-invalid={!!errors.child} aria-describedby={errors.child ? "amb-child-err" : undefined} />
-                {errors.child && <p id="amb-child-err" className="mt-1.5 text-xs text-[#ff9d9d]">{errors.child}</p>}
+                <label htmlFor={fid("amb-child")} className="mono-label mb-1.5 block text-[9.5px] text-cream/70">Child's name</label>
+                <input id={fid("amb-child")} className={`field field-dark ${errors.child ? "field-error" : ""}`} placeholder="e.g. Kirabo" value={form.child} onChange={(e) => setForm({ ...form, child: e.target.value })} aria-invalid={!!errors.child} aria-describedby={errors.child ? fid("amb-child-err") : undefined} />
+                {errors.child && <p id={fid("amb-child-err")} className="mt-1.5 text-xs text-[#ff9d9d]">{errors.child}</p>}
               </div>
               <div>
-                <label htmlFor="amb-klass" className="mono-label mb-1.5 block text-[9.5px] text-cream/70">Class</label>
-                <select id="amb-klass" className={`field field-dark ${errors.klass ? "field-error" : ""}`} value={form.klass} onChange={(e) => setForm({ ...form, klass: e.target.value })} aria-invalid={!!errors.klass} aria-describedby={errors.klass ? "amb-klass-err" : undefined}>
+                <label htmlFor={fid("amb-klass")} className="mono-label mb-1.5 block text-[9.5px] text-cream/70">Class</label>
+                <select id={fid("amb-klass")} className={`field field-dark ${errors.klass ? "field-error" : ""}`} value={form.klass} onChange={(e) => setForm({ ...form, klass: e.target.value })} aria-invalid={!!errors.klass} aria-describedby={errors.klass ? fid("amb-klass-err") : undefined}>
                   <option value="" disabled>Select class…</option>
                   {CLASS_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
-                {errors.klass && <p id="amb-klass-err" className="mt-1.5 text-xs text-[#ff9d9d]">{errors.klass}</p>}
+                {errors.klass && <p id={fid("amb-klass-err")} className="mt-1.5 text-xs text-[#ff9d9d]">{errors.klass}</p>}
               </div>
             </div>
             <div>
               <label className="flex cursor-pointer items-start gap-3 text-sm text-cream/75">
-                <input type="checkbox" className="mt-1 h-4 w-4 accent-[#FFC93C]" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} aria-describedby={errors.consent ? "amb-consent-err" : undefined} />
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-[#FFC93C]" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} aria-describedby={errors.consent ? fid("amb-consent-err") : undefined} />
                 <span>I'm a current Star parent and I agree to the referral terms below.</span>
               </label>
-              {errors.consent && <p id="amb-consent-err" className="mt-1.5 text-xs text-[#ff9d9d]">{errors.consent}</p>}
+              {errors.consent && <p id={fid("amb-consent-err")} className="mt-1.5 text-xs text-[#ff9d9d]">{errors.consent}</p>}
             </div>
             <Magnetic className="w-full">
               <button type="submit" disabled={busy} className="btn btn-gold w-full justify-center disabled:opacity-60">
@@ -280,7 +292,8 @@ function AmbassadorPanel() {
 }
 
 /* ---------------- registration form (referred parents) ---------------- */
-function RegisterPanel({ refCode }: { refCode: string }) {
+export function RegisterPanel({ refCode, idPrefix = "" }: { refCode: string; idPrefix?: string }) {
+  const fid = (n: string) => idPrefix + n;
   const [form, setForm] = useState({ parent: "", phone: "", child: "", klass: "", code: refCode, consent: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -314,7 +327,7 @@ function RegisterPanel({ refCode }: { refCode: string }) {
   };
 
   return (
-    <div id="register" className="relative scroll-mt-24 overflow-hidden rounded-2xl border border-cream/14 bg-cream p-7 text-ink shadow-[0_30px_80px_-30px_rgba(9,12,40,0.8)] sm:p-9">
+    <div id={fid("register")} className="relative scroll-mt-24 overflow-hidden rounded-2xl border border-cream/14 bg-cream p-7 text-ink shadow-[0_30px_80px_-30px_rgba(9,12,40,0.8)] sm:p-9">
       <svg viewBox="0 0 24 24" className="absolute -right-8 -top-8 h-32 w-32 text-navy/6" aria-hidden="true">
         <path d="M12 1.8 L14.6 9.4 L22.2 12 L14.6 14.6 L12 22.2 L9.4 14.6 L1.8 12 L9.4 9.4 Z" fill="currentColor" />
       </svg>
@@ -336,43 +349,43 @@ function RegisterPanel({ refCode }: { refCode: string }) {
         <form onSubmit={submit} className="relative mt-6 space-y-4" noValidate>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="reg-parent" className="mono-label mb-1.5 block text-[9.5px] text-navy/60">Parent's name</label>
-              <input id="reg-parent" className={`field ${errors.parent ? "field-error" : ""}`} placeholder="e.g. Joseph Mugisha" value={form.parent} onChange={(e) => setForm({ ...form, parent: e.target.value })} aria-invalid={!!errors.parent} aria-describedby={errors.parent ? "reg-parent-err" : undefined} />
-              {errors.parent && <p id="reg-parent-err" className="mt-1.5 text-xs text-[#b33232]">{errors.parent}</p>}
+              <label htmlFor={fid("reg-parent")} className="mono-label mb-1.5 block text-[9.5px] text-navy/60">Parent's name</label>
+              <input id={fid("reg-parent")} className={`field ${errors.parent ? "field-error" : ""}`} placeholder="e.g. Joseph Mugisha" value={form.parent} onChange={(e) => setForm({ ...form, parent: e.target.value })} aria-invalid={!!errors.parent} aria-describedby={errors.parent ? fid("reg-parent-err") : undefined} />
+              {errors.parent && <p id={fid("reg-parent-err")} className="mt-1.5 text-xs text-[#b33232]">{errors.parent}</p>}
             </div>
             <div>
-              <label htmlFor="reg-phone" className="mono-label mb-1.5 block text-[9.5px] text-navy/60">WhatsApp number</label>
-              <input id="reg-phone" type="tel" className={`field ${errors.phone ? "field-error" : ""}`} placeholder="07XX XXX XXX" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} aria-invalid={!!errors.phone} aria-describedby={errors.phone ? "reg-phone-err" : undefined} />
-              {errors.phone && <p id="reg-phone-err" className="mt-1.5 text-xs text-[#b33232]">{errors.phone}</p>}
+              <label htmlFor={fid("reg-phone")} className="mono-label mb-1.5 block text-[9.5px] text-navy/60">WhatsApp number</label>
+              <input id={fid("reg-phone")} type="tel" className={`field ${errors.phone ? "field-error" : ""}`} placeholder="07XX XXX XXX" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} aria-invalid={!!errors.phone} aria-describedby={errors.phone ? fid("reg-phone-err") : undefined} />
+              {errors.phone && <p id={fid("reg-phone-err")} className="mt-1.5 text-xs text-[#b33232]">{errors.phone}</p>}
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="reg-child" className="mono-label mb-1.5 block text-[9.5px] text-navy/60">Child's name</label>
-              <input id="reg-child" className={`field ${errors.child ? "field-error" : ""}`} placeholder="e.g. Amani" value={form.child} onChange={(e) => setForm({ ...form, child: e.target.value })} aria-invalid={!!errors.child} aria-describedby={errors.child ? "reg-child-err" : undefined} />
-              {errors.child && <p id="reg-child-err" className="mt-1.5 text-xs text-[#b33232]">{errors.child}</p>}
+              <label htmlFor={fid("reg-child")} className="mono-label mb-1.5 block text-[9.5px] text-navy/60">Child's name</label>
+              <input id={fid("reg-child")} className={`field ${errors.child ? "field-error" : ""}`} placeholder="e.g. Amani" value={form.child} onChange={(e) => setForm({ ...form, child: e.target.value })} aria-invalid={!!errors.child} aria-describedby={errors.child ? fid("reg-child-err") : undefined} />
+              {errors.child && <p id={fid("reg-child-err")} className="mt-1.5 text-xs text-[#b33232]">{errors.child}</p>}
             </div>
             <div>
-              <label htmlFor="reg-klass" className="mono-label mb-1.5 block text-[9.5px] text-navy/60">Joining class</label>
-              <select id="reg-klass" className={`field ${errors.klass ? "field-error" : ""}`} value={form.klass} onChange={(e) => setForm({ ...form, klass: e.target.value })} aria-invalid={!!errors.klass} aria-describedby={errors.klass ? "reg-klass-err" : undefined}>
+              <label htmlFor={fid("reg-klass")} className="mono-label mb-1.5 block text-[9.5px] text-navy/60">Joining class</label>
+              <select id={fid("reg-klass")} className={`field ${errors.klass ? "field-error" : ""}`} value={form.klass} onChange={(e) => setForm({ ...form, klass: e.target.value })} aria-invalid={!!errors.klass} aria-describedby={errors.klass ? fid("reg-klass-err") : undefined}>
                 <option value="" disabled>Select class…</option>
                 {CLASS_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
-              {errors.klass && <p id="reg-klass-err" className="mt-1.5 text-xs text-[#b33232]">{errors.klass}</p>}
+              {errors.klass && <p id={fid("reg-klass-err")} className="mt-1.5 text-xs text-[#b33232]">{errors.klass}</p>}
             </div>
           </div>
           <div>
-            <label htmlFor="reg-code" className="mono-label mb-1.5 block text-[9.5px] text-navy/60">
+            <label htmlFor={fid("reg-code")} className="mono-label mb-1.5 block text-[9.5px] text-navy/60">
               Referral code <span className="normal-case tracking-normal">(optional — auto-filled from a family link)</span>
             </label>
-            <input id="reg-code" className="field uppercase tracking-[0.18em]" style={{ fontFamily: "var(--font-grotesk)" }} placeholder="STAR-XXXXX" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} />
+            <input id={fid("reg-code")} className="field uppercase tracking-[0.18em]" style={{ fontFamily: "var(--font-grotesk)" }} placeholder="STAR-XXXXX" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} />
           </div>
           <div>
             <label className="flex cursor-pointer items-start gap-3 text-sm text-ink/75">
-              <input type="checkbox" className="mt-1 h-4 w-4 accent-[#171E48]" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} aria-describedby={errors.consent ? "reg-consent-err" : undefined} />
+              <input type="checkbox" className="mt-1 h-4 w-4 accent-[#171E48]" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} aria-describedby={errors.consent ? fid("reg-consent-err") : undefined} />
               <span>Star Schools may contact me on WhatsApp/call about admission &amp; the interview.</span>
             </label>
-            {errors.consent && <p id="reg-consent-err" className="mt-1.5 text-xs text-[#b33232]">{errors.consent}</p>}
+            {errors.consent && <p id={fid("reg-consent-err")} className="mt-1.5 text-xs text-[#b33232]">{errors.consent}</p>}
           </div>
           <Magnetic className="w-full">
             <button type="submit" disabled={busy} className="btn w-full justify-center bg-navy text-gold transition hover:bg-navy-2 disabled:opacity-60" style={{ boxShadow: "0 12px 34px -12px rgba(23,30,72,0.6)" }}>

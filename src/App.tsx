@@ -18,6 +18,7 @@ import Testimonials from "./components/Testimonials";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import Admin from "./components/Admin";
+import JoinModal from "./components/JoinModal";
 
 export default function App() {
   const reduced = reducedMotion();
@@ -115,6 +116,7 @@ export default function App() {
             <Contact />
           </main>
           <Footer />
+          <JoinModal refCode={refCode} ready={ready} />
         </>
       )}
     </div>
