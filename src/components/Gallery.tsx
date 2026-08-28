@@ -48,6 +48,7 @@ function LazyImage({ shot, onClick }: { shot: Shot; onClick: () => void }) {
 export default function Gallery() {
   const [idx, setIdx] = useState<number | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const open = idx !== null;
 
   const close = useCallback(() => setIdx(null), []);
@@ -58,17 +59,40 @@ export default function Gallery() {
 
   useEffect(() => {
     if (!open) return;
+    const dialog = dialogRef.current;
+    const restoreTo = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
+    /* body overflow alone does not stop Lenis's wheel handling. */
+    const lenis = (window as unknown as { __lenis?: { stop: () => void; start: () => void } }).__lenis;
+    lenis?.stop();
     closeRef.current?.focus();
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-      if (e.key === "ArrowRight") step(1);
-      if (e.key === "ArrowLeft") step(-1);
+      if (e.key === "Escape") return close();
+      if (e.key === "ArrowRight") return step(1);
+      if (e.key === "ArrowLeft") return step(-1);
+      if (e.key !== "Tab" || !dialog) return;
+      /* Keep focus inside the viewer while it is modal. */
+      const focusable = dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = "";
+      lenis?.start();
       window.removeEventListener("keydown", onKey);
+      restoreTo?.focus?.();
     };
   }, [open, close, step]);
 
@@ -105,6 +129,7 @@ export default function Gallery() {
 
       {open && (
         <div
+          ref={dialogRef}
           className="fixed inset-0 z-[340] flex flex-col bg-navy-3/97 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"

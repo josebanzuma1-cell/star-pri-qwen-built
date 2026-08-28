@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { gsap, reducedMotion } from "../lib/gsap";
+import { gsap, ScrollTrigger, reducedMotion } from "../lib/gsap";
 import { StarSparkles } from "./ui";
 
 type Panel = {
@@ -16,6 +16,8 @@ const icon = (path: ReactNode) => (
     {path}
   </svg>
 );
+
+const DRAG_THRESHOLD = 5; // px of travel before a drag scrubs the timeline
 
 const PANELS: Panel[] = [
   {
@@ -92,7 +94,7 @@ const PANELS: Panel[] = [
 export default function Programs() {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const stRef = useRef<{ start: number; end: number } | null>(null);
+  const stRef = useRef<ScrollTrigger | null>(null);
   const dragRef = useRef<{ startX: number; startScroll: number } | null>(null);
   const [progress, setProgress] = useState(0);
   const [panel, setPanel] = useState(0);
@@ -122,9 +124,13 @@ export default function Programs() {
         },
       },
     });
-    stRef.current = { start: tween.scrollTrigger!.start, end: tween.scrollTrigger!.end };
+    /* Hold the instance itself: invalidateOnRefresh recomputes start/end on
+       every resize, so a snapshot taken here goes stale and the drag would
+       clamp to the wrong range. */
+    stRef.current = tween.scrollTrigger!;
 
     return () => {
+      stRef.current = null;
       tween.scrollTrigger?.kill();
       tween.kill();
     };
@@ -132,6 +138,8 @@ export default function Programs() {
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (reduced) return;
+    /* Let links, buttons and text selection behave normally. */
+    if ((e.target as HTMLElement).closest("a, button, input, select, textarea")) return;
     dragRef.current = { startX: e.clientX, startScroll: window.scrollY };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
@@ -140,6 +148,8 @@ export default function Programs() {
     const st = stRef.current;
     if (!drag || !st || reduced) return;
     const dx = drag.startX - e.clientX;
+    /* A few stray pixels during a click should not hijack the scroll. */
+    if (Math.abs(dx) < DRAG_THRESHOLD) return;
     const target = Math.max(st.start, Math.min(st.end, drag.startScroll + dx));
     const lenis = (window as unknown as { __lenis?: { scrollTo: (v: number, o?: object) => void } }).__lenis;
     if (lenis) lenis.scrollTo(target, { immediate: true });

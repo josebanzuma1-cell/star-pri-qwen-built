@@ -183,6 +183,7 @@ export function CountUp({
   const ref = useRef<HTMLSpanElement>(null);
   const [value, setValue] = useState(0);
   const started = useRef(false);
+  const frame = useRef(0);
 
   useEffect(() => {
     const el = ref.current;
@@ -199,14 +200,17 @@ export function CountUp({
         const tick = (t: number) => {
           const p = Math.min(1, (t - t0) / duration);
           setValue(Math.round(to * (1 - Math.pow(1 - p, 3))));
-          if (p < 1) requestAnimationFrame(tick);
+          if (p < 1) frame.current = requestAnimationFrame(tick);
         };
-        requestAnimationFrame(tick);
+        frame.current = requestAnimationFrame(tick);
       },
       { threshold: 0.4 }
     );
     obs.observe(el);
-    return () => obs.disconnect();
+    return () => {
+      obs.disconnect();
+      cancelAnimationFrame(frame.current);
+    };
   }, [to, duration]);
 
   return (

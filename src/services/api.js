@@ -56,6 +56,25 @@ export function generateCode() {
   return `STAR-${body}`;
 }
 
+/**
+ * Mint a code no existing ambassador already holds. generateCode() on its
+ * own can hand the same code to two parents, silently merging their
+ * referral stats under one identity.
+ */
+function uniqueCode(ambassadors) {
+  const taken = new Set(ambassadors.map((a) => a.code));
+  for (let i = 0; i < 50; i++) {
+    const code = generateCode();
+    if (!taken.has(code)) return code;
+  }
+  /* 32^5 combinations make 50 straight collisions effectively impossible,
+     but never hand back a duplicate - suffix it until it is free. */
+  const base = generateCode();
+  let n = 2;
+  while (taken.has(base + '-' + n)) n++;
+  return base + '-' + n;
+}
+
 export const normalizePhone = (p) => String(p || "").replace(/[^\d+]/g, "");
 
 const uid = () =>
@@ -112,7 +131,7 @@ export async function createAmbassador({ name, phone, child, klass, consent }) {
   if (existing) return { ...existing, existing: true };
   const ambassador = {
     id: uid(),
-    code: generateCode(),
+    code: uniqueCode(ambassadors),
     name: name.trim(),
     phone: phone.trim(),
     child: child.trim(),
@@ -153,25 +172,33 @@ export async function createLead({ parent, phone, child, klass, code, consent })
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ parent, phone, child, klass, code, consent }),
   });
-  return res.json(); // -> { lead, duplicate?: boolean }
+  return res.json(); // -> { lead, duplicate?: boolean, unknownCode?: boolean }
   */
   await new Promise((r) => setTimeout(r, 480));
   const leads = read(KEYS.leads, []);
   const dup = leads.find((l) => normalizePhone(l.phone) === normalizePhone(phone));
-  if (dup) return { lead: dup, duplicate: true };
+  if (dup) return { lead: dup, duplicate: true, unknownCode: false };
+
+  /* A code only attributes if an ambassador actually holds it. A mistyped
+     code is dropped rather than stored, so it can never become an orphan
+     credit nobody can claim - the registration itself is still kept, and
+     the caller is told so it can ask the family to check the code. */
+  const entered = String(code || '').trim().toUpperCase();
+  const known = !entered || read(KEYS.ambassadors, []).some((a) => a.code === entered);
+
   const lead = {
     id: uid(),
     parent: parent.trim(),
     phone: phone.trim(),
     child: child.trim(),
     klass,
-    code: String(code || "").trim().toUpperCase(),
+    code: known ? entered : "",
     consent: !!consent,
     status: "new",
     createdAt: Date.now(),
   };
   write(KEYS.leads, [lead, ...leads]);
-  return { lead, duplicate: false };
+  return { lead, duplicate: false, unknownCode: !!entered && !known };
 }
 
 /* ------------------------------------------------------------------ */

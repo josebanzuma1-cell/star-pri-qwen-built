@@ -52,7 +52,7 @@ export declare function createLead(input: {
   klass: string;
   code: string;
   consent: boolean;
-}): Promise<{ lead: LeadRecord; duplicate: boolean }>;
+}): Promise<{ lead: LeadRecord; duplicate: boolean; unknownCode: boolean }>;
 
 export declare function getStats(code: string): Promise<AmbassadorStats>;
 

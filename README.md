@@ -49,7 +49,9 @@ validation and animated success state; admin console with lead pipeline
 (`new → contacted → tour → applied → admitted → enrolled → paid → reward_issued`) and CSV export.
 
 **Attribution rules:** first code wins • duplicate detection by phone • clicks stored with
-timestamp + code.
+timestamp + code • codes are minted unique against the existing roster • a code that no
+ambassador holds is not stored on the lead (the registration is still kept, and the family is
+told the code was not recognised).
 
 ### Demo mode → real backend
 
@@ -93,6 +95,19 @@ Captions/alt text live in `src/components/Hero.tsx` and `src/components/Gallery.
 - **Phone numbers / WhatsApp**: `src/lib/helpers.ts` → `SCHOOL_PHONES`, `waLink(...)`.
 - **Program panels**: `src/components/Programs.tsx` → `PANELS`.
 - **Ambassador terms microcopy**: bottom of the dashboard card in `src/components/Ambassador.tsx`.
+
+## Fixes applied after the original build
+
+| Area | What was wrong |
+| ---- | -------------- |
+| Smart-link pre-fill | `RegisterPanel` read the referral code during render while `App` only wrote it from an effect, so the code was missing on the first visit to a `?ref=` link — every referred family registered unattributed. Resolved in `App` during render and passed down. |
+| Code uniqueness | `generateCode()` was used with no check against existing codes; a collision would merge two parents' stats. |
+| Unknown codes | Any typed string was stored as the attribution. Now validated against the ambassador roster. |
+| CSV export | Headers came from `rows[0]` only, dropping columns when rows differed in shape. |
+| Programs drag | Cached ScrollTrigger bounds went stale on resize; drags also hijacked clicks on links. |
+| Preloader | Scrambling text sat in a `role="status"` live region, announcing ~24x/second. |
+| Lightbox | No focus trap, and Lenis kept scrolling behind the modal. |
+| Dependencies | 10 declared packages were never imported (Supabase, Recharts, Framer Motion, dnd-kit x3, React Router, date-fns, lucide-react, uuid). |
 
 ## Accessibility & performance
 

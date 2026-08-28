@@ -7,6 +7,8 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
   const [text, setText] = useState("");
   const [lifting, setLifting] = useState(false);
   const doneRef = useRef(false);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -15,7 +17,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
       const t = setTimeout(() => {
         if (!doneRef.current) {
           doneRef.current = true;
-          onDone();
+          onDoneRef.current();
         }
       }, 350);
       return () => clearTimeout(t);
@@ -40,21 +42,22 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
           setLifting(true);
           if (!doneRef.current) {
             doneRef.current = true;
-            onDone();
+            onDoneRef.current();
           }
         }, 420);
       }
     }, 42);
 
     return () => window.clearInterval(interval);
-  }, [onDone]);
+  }, []);
 
   return (
     <div
       className={`preloader ${lifting ? "lift" : ""}`}
-      role="status"
-      aria-label="Loading Star Primary & Nursery School Namasuba"
     >
+      <p className="sr-only" role="status">
+        Loading Star Primary &amp; Nursery School Namasuba
+      </p>
       <svg viewBox="0 0 100 100" className="h-20 w-20 drop-shadow-[0_0_18px_rgba(255,201,60,0.5)]" aria-hidden="true">
         <path
           d="M50 6 L61.2 38.4 L95.4 38.4 L67.8 58.6 L78.4 91 L50 70.8 L21.6 91 L32.2 58.6 L4.6 38.4 L38.8 38.4 Z"
@@ -69,10 +72,11 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
       <p
         className="mono-label text-xs text-gold sm:text-sm"
         style={{ minHeight: "1.5em", letterSpacing: "0.42em" }}
+        aria-hidden="true"
       >
         {text || "\u00A0"}
       </p>
-      <p className="mono-label text-[10px] text-cream/40">Star Schools · Namasuba</p>
+      <p className="mono-label text-[10px] text-cream/40" aria-hidden="true">Star Schools · Namasuba</p>
     </div>
   );
 }

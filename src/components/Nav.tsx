@@ -6,6 +6,7 @@ const LINKS = [
   { id: "gallery", label: "Gallery", index: "03" },
   { id: "admissions", label: "Admissions", index: "04" },
   { id: "ambassador", label: "Ambassadors", index: "05" },
+  { id: "testimonials", label: "Voices", index: "06" },
   { id: "contact", label: "Contact", index: "07" },
 ];
 

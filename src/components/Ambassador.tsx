@@ -284,7 +284,7 @@ function RegisterPanel({ refCode }: { refCode: string }) {
   const [form, setForm] = useState({ parent: "", phone: "", child: "", klass: "", code: refCode, consent: false });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState<null | { duplicate: boolean }>(null);
+  const [done, setDone] = useState<null | { duplicate: boolean; unknownCode: boolean }>(null);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -300,9 +300,11 @@ function RegisterPanel({ refCode }: { refCode: string }) {
     setBusy(true);
     const res = await createLead({ ...form, phone: form.phone.replace(/\s/g, "") });
     setBusy(false);
-    setDone({ duplicate: !!res.duplicate });
+    setDone({ duplicate: !!res.duplicate, unknownCode: !!res.unknownCode });
     window.dispatchEvent(new Event("star:data-changed"));
     if (res.duplicate) toast("This number is already registered — our team will call you.", "plain");
+    else if (res.unknownCode)
+      toast("Registered ⭐ — but we did not recognise that referral code, so no credit was applied.", "plain");
     else toast("Registration received! Expect our call for an immediate interview ⭐", "green");
   };
 
@@ -396,6 +398,13 @@ function RegisterPanel({ refCode }: { refCode: string }) {
               ? "This number registered before — our admissions team will call you to arrange the tour and immediate interview."
               : "Our admissions team will call you on WhatsApp shortly to arrange your tour — remember, interviews happen immediately."}
           </p>
+          {done.unknownCode && (
+            <p className="mx-auto mt-4 max-w-sm rounded-xl border border-amber/40 bg-amber/10 px-4 py-3 text-xs leading-relaxed text-ink/70">
+              We could not match that referral code to a Star family, so no tuition credit was
+              attached. Your registration is safe — please check the code with whoever shared it
+              and mention it when we call.
+            </p>
+          )}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <a href={waLink("256759443714", "Hello Star Schools! I just registered online and would like to book our tour + interview.")} target="_blank" rel="noopener noreferrer" className="btn btn-gold !py-2.5 text-[10px]">
               WhatsApp admissions

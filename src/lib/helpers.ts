@@ -101,7 +101,10 @@ export function burst(originX = 0.5, originY = 0.42) {
 
 export function toCsv(rows: Record<string, unknown>[]): string {
   if (!rows.length) return "";
-  const headers = Object.keys(rows[0]);
+  /* Union of every row's keys, in first-seen order. Taking headers from
+     rows[0] alone silently drops columns whenever the rows are not all
+     the same shape (seeded demo records carry fields real ones do not). */
+  const headers = [...new Set(rows.flatMap((r) => Object.keys(r)))];
   const esc = (v: unknown) => {
     const s = String(v ?? "");
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
