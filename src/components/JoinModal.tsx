@@ -6,10 +6,19 @@ import { prefersReduced } from "../lib/helpers";
    that it does not fight the preloader lift or the hero intro. */
 const OPEN_DELAY_MS = 2600;
 
+type Tab = "register" | "ambassador";
+
+const TABS: { id: Tab; label: string; hint: string }[] = [
+  { id: "register", label: "Register my child", hint: "Book an immediate interview" },
+  { id: "ambassador", label: "Become an ambassador", hint: "Earn a tuition credit" },
+];
+
 export default function JoinModal({ refCode, ready }: { refCode: string; ready: boolean }) {
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>("register");
   const dialogRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const restoreTo = useRef<HTMLElement | null>(null);
 
@@ -21,6 +30,11 @@ export default function JoinModal({ refCode, ready }: { refCode: string; ready: 
     const t = window.setTimeout(() => setOpen(true), prefersReduced() ? 600 : OPEN_DELAY_MS);
     return () => window.clearTimeout(t);
   }, [ready]);
+
+  /* A switched tab should start at the top of its form, not mid-scroll. */
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = 0;
+  }, [tab]);
 
   useEffect(() => {
     if (!open) return;
@@ -63,7 +77,7 @@ export default function JoinModal({ refCode, ready }: { refCode: string; ready: 
   return (
     <div
       ref={dialogRef}
-      className="fixed inset-0 z-[350] flex items-start justify-center overflow-y-auto bg-navy-3/90 px-4 py-8 backdrop-blur-sm sm:px-6"
+      className="fixed inset-0 z-[350] flex items-center justify-center bg-navy-3/90 px-3 py-4 backdrop-blur-sm sm:px-6 sm:py-8"
       role="dialog"
       aria-modal="true"
       aria-labelledby="join-modal-title"
@@ -72,22 +86,20 @@ export default function JoinModal({ refCode, ready }: { refCode: string; ready: 
         if (!panelRef.current?.contains(e.target as Node)) close();
       }}
     >
-      <div ref={panelRef} className="pop-in relative w-full max-w-5xl">
-        <div className="mb-5 flex items-start justify-between gap-5">
+      {/* Column capped to the viewport: header, tabs and footer stay put while
+          only the form scrolls, so the close button is always reachable. */}
+      <div ref={panelRef} className="pop-in relative flex max-h-full w-full max-w-2xl flex-col">
+        <div className="flex shrink-0 items-start justify-between gap-4">
           <div>
             <span className="eyebrow text-gold">Registration is open</span>
-            <h2 id="join-modal-title" className="h-lg mt-2 text-cream">
-              Join the hill, or <em className="italic text-gold">carry the light.</em>
+            <h2 id="join-modal-title" className="h-lg mt-1.5 text-cream">
+              Join the <em className="italic text-gold">hill.</em>
             </h2>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-cream/65">
-              Register your child for an immediate interview, or become a Parent Ambassador and
-              earn a tuition credit for every family you bring.
-            </p>
           </div>
           <button
             ref={closeRef}
             onClick={close}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cream/25 text-cream transition hover:border-gold hover:text-gold"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cream/25 text-cream transition hover:border-gold hover:text-gold"
             aria-label="Close and browse the site"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -96,12 +108,54 @@ export default function JoinModal({ refCode, ready }: { refCode: string; ready: 
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <AmbassadorPanel idPrefix="m-" />
-          <RegisterPanel refCode={refCode} idPrefix="m-" />
+        <div
+          role="tablist"
+          aria-label="Choose what to do"
+          className="mt-3.5 flex shrink-0 gap-1.5 rounded-2xl border border-cream/12 bg-navy-3/70 p-1.5"
+        >
+          {TABS.map((t) => {
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                role="tab"
+                id={`join-tab-${t.id}`}
+                aria-selected={active}
+                aria-controls="join-tabpanel"
+                onClick={() => setTab(t.id)}
+                className={`flex-1 rounded-xl px-3 py-2.5 text-left transition-colors duration-300 ${
+                  active ? "bg-gold text-navy" : "text-cream/70 hover:bg-cream/5 hover:text-cream"
+                }`}
+              >
+                <span className="block text-[12.5px] font-bold leading-tight sm:text-sm">{t.label}</span>
+                <span
+                  className={`mono-label mt-1 block text-[8.5px] leading-tight ${
+                    active ? "text-navy/65" : "text-cream/40"
+                  }`}
+                >
+                  {t.hint}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="mt-5 flex justify-center">
+        <div
+          ref={bodyRef}
+          id="join-tabpanel"
+          role="tabpanel"
+          aria-labelledby={`join-tab-${tab}`}
+          tabIndex={0}
+          className="mt-3.5 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl"
+        >
+          {tab === "register" ? (
+            <RegisterPanel refCode={refCode} idPrefix="m-" />
+          ) : (
+            <AmbassadorPanel idPrefix="m-" />
+          )}
+        </div>
+
+        <div className="mt-3.5 flex shrink-0 justify-center">
           <button
             onClick={close}
             className="mono-label rounded-full border border-cream/20 px-5 py-2.5 text-[9.5px] text-cream/60 transition hover:border-gold hover:text-gold"
