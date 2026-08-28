@@ -12,7 +12,7 @@ type Panel = {
 };
 
 const icon = (path: ReactNode) => (
-  <svg viewBox="0 0 48 48" className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg viewBox="0 0 48 48" className="pc-icon h-12 w-12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     {path}
   </svg>
 );
@@ -169,7 +169,7 @@ export default function Programs() {
       onPointerCancel={endDrag}
     >
       <StarSparkles count={12} />
-      <div className="relative flex min-h-svh flex-col justify-center py-20">
+      <div className="programs-shell relative flex min-h-svh flex-col justify-center">
         <div className="mx-auto flex w-full max-w-[1440px] items-end justify-between gap-6 px-5 sm:px-8">
           <div>
             <div className="flex items-center gap-4">
@@ -178,7 +178,7 @@ export default function Programs() {
               </svg>
               <span className="eyebrow text-gold">02 / Programs</span>
             </div>
-            <h2 className="h-xl mt-5 max-w-2xl text-cream">
+            <h2 className="h-xl programs-title mt-5 max-w-2xl text-cream">
               One hill, <em className="italic text-gold">five</em> ways to shine.
             </h2>
           </div>
@@ -190,7 +190,7 @@ export default function Programs() {
           </div>
         </div>
 
-        <div className="mx-auto mt-8 w-full max-w-[1440px] px-5 sm:px-8">
+        <div className="programs-progress mx-auto w-full max-w-[1440px] px-5 sm:px-8">
           <div className="h-[3px] w-full overflow-hidden rounded-full bg-cream/10">
             <div
               className="h-full rounded-full bg-gradient-to-r from-gold to-amber"
@@ -201,7 +201,7 @@ export default function Programs() {
 
         <div
           ref={trackRef}
-          className={`mt-10 flex gap-6 pl-5 pr-[10vw] sm:pl-8 ${
+          className={`programs-track flex gap-6 pl-5 pr-[10vw] sm:pl-8 ${
             reduced ? "no-scrollbar w-full snap-x snap-mandatory overflow-x-auto" : "will-change-transform"
           }`}
           style={{ width: reduced ? "100%" : "max-content" }}
@@ -209,12 +209,12 @@ export default function Programs() {
           {PANELS.map((p, i) => (
             <article
               key={p.title}
-              className={`group relative flex w-[86vw] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-2xl p-8 transition-colors duration-500 sm:w-[440px] sm:p-10 ${
+              className={`program-card group relative flex w-[86vw] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-2xl transition-colors duration-500 sm:w-[440px] ${
                 p.dark ? "border border-gold/15 bg-navy-2 text-cream" : "bg-cream text-navy"
               }`}
             >
               <span
-                className={`font-display pointer-events-none absolute -right-3 -top-7 select-none text-[11rem] font-extrabold leading-none ${
+                className={`pc-numeral font-display pointer-events-none absolute -right-3 -top-7 select-none font-extrabold leading-none ${
                   p.dark ? "text-cream/5" : "text-navy/5"
                 }`}
                 aria-hidden="true"
@@ -228,10 +228,10 @@ export default function Programs() {
                     {p.tag}
                   </span>
                 </div>
-                <h3 className="h-lg mt-8 max-w-[16ch]">{p.title}</h3>
-                <p className={`mt-4 max-w-[34ch] leading-relaxed ${p.dark ? "text-cream/70" : "text-ink/70"}`}>{p.copy}</p>
+                <h3 className="h-lg pc-title max-w-[16ch]">{p.title}</h3>
+                <p className={`pc-copy max-w-[34ch] leading-relaxed ${p.dark ? "text-cream/70" : "text-ink/70"}`}>{p.copy}</p>
               </div>
-              <ul className="relative mt-9 flex flex-wrap gap-2">
+              <ul className="pc-chips relative flex flex-wrap gap-2">
                 {p.chips.map((c) => (
                   <li
                     key={c}
@@ -258,7 +258,7 @@ export default function Programs() {
               if (lenis) lenis.scrollTo("#admissions", { offset: -64 });
               else el.scrollIntoView({ behavior: "auto" });
             }}
-            className="group flex w-[70vw] shrink-0 snap-start flex-col items-start justify-center rounded-2xl border border-dashed border-gold/40 p-10 transition-colors hover:bg-gold/5 sm:w-[360px]"
+            className="program-card group flex w-[70vw] shrink-0 snap-start flex-col items-start justify-center rounded-2xl border border-dashed border-gold/40 transition-colors hover:bg-gold/5 sm:w-[360px]"
           >
             <span className="eyebrow text-gold">Next stop</span>
             <p className="font-display mt-4 text-3xl font-bold text-cream">

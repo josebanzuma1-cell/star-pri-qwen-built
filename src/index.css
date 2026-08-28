@@ -419,6 +419,47 @@ section {
 }
 
 /* ---------- reduced motion ---------- */
+/* ---------- programs: keep every card fully inside the pinned viewport ----------
+   The section is pinned, so its height is the viewport height and anything
+   taller is cut off by overflow:hidden. Spacing is therefore driven by vh so
+   the whole stack shrinks on short screens and keeps the original look on
+   tall ones.                                                                */
+.programs-shell {
+  padding-block: clamp(1rem, 4vh, 5rem);
+}
+.programs-title {
+  /* the width-based display clamp alone can overwhelm a short viewport */
+  font-size: min(clamp(2rem, 4.4vw, 3.7rem), 7.5vh);
+}
+.programs-progress {
+  margin-top: clamp(0.5rem, 2vh, 2rem);
+}
+.programs-track {
+  margin-top: clamp(0.75rem, 3vh, 2.5rem);
+}
+
+.program-card {
+  padding: clamp(1.25rem, 3.2vh, 2.5rem);
+  max-height: 100%;
+}
+.program-card .pc-icon {
+  width: clamp(2rem, 5vh, 3rem);
+  height: clamp(2rem, 5vh, 3rem);
+}
+.program-card .pc-title {
+  margin-top: clamp(0.75rem, 2.6vh, 2rem);
+  font-size: min(clamp(1.5rem, 2.8vw, 2.3rem), 4.6vh);
+}
+.program-card .pc-copy {
+  margin-top: clamp(0.5rem, 1.4vh, 1rem);
+}
+.program-card .pc-chips {
+  margin-top: clamp(0.75rem, 3vh, 2.25rem);
+}
+.program-card .pc-numeral {
+  font-size: clamp(5rem, 17vh, 11rem);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
