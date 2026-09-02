@@ -1,4 +1,5 @@
 import { SCHOOL_PHONES } from "../lib/helpers";
+import Logo from "./Logo";
 
 const QUICK_LINKS = [
   { id: "about", label: "About the school" },
@@ -48,9 +49,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-12 px-5 py-16 sm:px-8 md:grid-cols-12">
         <div className="md:col-span-5">
           <a href="#top" onClick={go("top")} className="flex items-center gap-3" aria-label="Back to top">
-            <svg viewBox="0 0 24 24" className="h-9 w-9 text-gold" aria-hidden="true">
-              <path d="M12 1.8 L14.6 9.4 L22.2 12 L14.6 14.6 L12 22.2 L9.4 14.6 L1.8 12 L9.4 9.4 Z" fill="currentColor" />
-            </svg>
+            <Logo className="h-14 w-14 shrink-0 text-gold" title="" />
             <span className="leading-none">
               <span className="font-display block text-lg font-bold text-cream">
                 Star <span className="italic text-gold">Schools</span>

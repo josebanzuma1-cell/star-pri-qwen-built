@@ -48,8 +48,8 @@ export default function About() {
               <div className="relative h-72 overflow-hidden rounded-2xl">
                 <div className="kenburns h-full">
                   <SmartImg
-                    src="images/learning.jpg"
-                    alt="A teacher guiding Star Primary pupils at their desks in a bright classroom"
+                    src="images/dance-class.jpg"
+                    alt="A Star Primary teacher guiding pupils through a dance routine in class"
                     width={640}
                     height={480}
                     loading="lazy"

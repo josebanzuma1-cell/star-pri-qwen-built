@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Logo from "./Logo";
 
 const LINKS = [
   { id: "about", label: "About", index: "01" },
@@ -80,9 +81,11 @@ export default function Nav() {
 
         <nav className="mx-auto flex max-w-[1440px] items-center justify-between gap-6 px-5 py-4 sm:px-8" aria-label="Primary">
           <a href="#top" onClick={go("top")} className="group flex items-center gap-3" aria-label="Star Primary & Nursery School Namasuba — back to top">
-            <svg viewBox="0 0 24 24" className="h-8 w-8 text-gold transition-transform duration-500 group-hover:rotate-[144deg]" aria-hidden="true">
-              <path d="M12 1.8 L14.6 9.4 L22.2 12 L14.6 14.6 L12 22.2 L9.4 14.6 L1.8 12 L9.4 9.4 Z" fill="currentColor" />
-            </svg>
+            <Logo
+              className="h-10 w-10 shrink-0 text-gold transition-transform duration-500 group-hover:scale-105"
+              showRibbon={false}
+              title=""
+            />
             <span className="leading-none">
               <span className="font-display block text-[15px] font-bold tracking-wide text-cream">
                 Star <span className="italic text-gold">Schools</span>

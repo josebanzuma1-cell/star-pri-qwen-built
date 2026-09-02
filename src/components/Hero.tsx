@@ -4,9 +4,9 @@ import { Magnetic, SmartImg, StarSparkles } from "./ui";
 
 const CARDS = [
   {
-    src: "images/hero-1.jpg",
-    alt: "Star Primary pupils in colourful uniforms laughing and playing in the sunny school compound",
-    caption: "Afternoon break, our compound",
+    src: "images/pupils.jpg",
+    alt: "Two Star Primary pupils in lilac shirts and navy jumpers, arms round each other, smiling",
+    caption: "Our pupils, on the hill",
     className: "right-[2%] top-0 w-[54%] sm:w-[52%]",
     tilt: "-4deg",
     speed: 0.5,
@@ -14,9 +14,9 @@ const CARDS = [
     eager: true,
   },
   {
-    src: "images/hero-2.jpg",
-    alt: "Nursery children celebrating with colourful face paint at a school party",
-    caption: "Celebration day",
+    src: "images/swim-joy.jpg",
+    alt: "A Star pupil beaming over a yellow kickboard at the edge of the school pool",
+    caption: "Swimming lessons",
     className: "left-0 top-[34%] w-[46%] sm:w-[42%]",
     tilt: "5deg",
     speed: 1,
@@ -24,12 +24,12 @@ const CARDS = [
     eager: false,
   },
   {
-    src: "images/compound.jpg",
-    alt: "The Star Schools compound at the top of Ndikutamadda Hill, Namasuba",
+    src: "images/campus.jpg",
+    alt: "The violet and pink Star Primary School day and boarding block on Ndikutamadda Hill",
     caption: "Top of Ndikutamadda Hill",
     className: "bottom-0 right-[6%] w-[44%] sm:w-[40%]",
     tilt: "-2deg",
-    speed: 1.5,
+  speed: 1.5,
     z: 30,
     eager: false,
   },
@@ -83,6 +83,24 @@ export default function Hero({ ready }: { ready: boolean }) {
       className="beams relative flex min-h-svh items-center overflow-hidden bg-navy-3 pt-28 pb-16 sm:pt-32"
       aria-label="Welcome"
     >
+      {/* Co-curricular film, playing behind the collage. Muted and inert so it
+          can autoplay; the poster carries the first paint and a violet scrim
+          keeps the headline readable over moving footage. */}
+      <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+        <video
+          className="hero-video h-full w-full object-cover"
+          src="video/co-curricular.mp4"
+          poster="images/swim-poolside.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          tabIndex={-1}
+        />
+        <div className="hero-scrim absolute inset-0" />
+      </div>
+
       <StarSparkles count={16} />
       <span
         className="text-outline pointer-events-none absolute -bottom-4 left-0 select-none font-display text-[19vw] font-extrabold leading-none opacity-50 sm:text-[15vw]"
@@ -179,7 +197,7 @@ export default function Hero({ ready }: { ready: boolean }) {
                     src={card.src}
                     alt={card.alt}
                     width={520}
-                    height={card.src === "images/hero-1.jpg" ? 640 : 400}
+                    height={card.src === "images/pupils.jpg" ? 420 : 400}
                     loading={card.eager ? "eager" : "lazy"}
                     className="block w-full"
                   />

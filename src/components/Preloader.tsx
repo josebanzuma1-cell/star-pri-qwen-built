@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import Logo from "./Logo";
 
 const MOTTO = "EDUCATION IS LIGHT";
 const GLYPHS = "★✶✦ETLGHCISODN0147";
@@ -76,17 +77,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
       <p className="sr-only" role="status">
         Loading Star Primary &amp; Nursery School Namasuba
       </p>
-      <svg viewBox="0 0 100 100" className="h-20 w-20 drop-shadow-[0_0_18px_rgba(255,201,60,0.5)]" aria-hidden="true">
-        <path
-          d="M50 6 L61.2 38.4 L95.4 38.4 L67.8 58.6 L78.4 91 L50 70.8 L21.6 91 L32.2 58.6 L4.6 38.4 L38.8 38.4 Z"
-          fill="none"
-          stroke="#FFC93C"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-          pathLength={1}
-          className="star-draw"
-        />
-      </svg>
+      <Logo className="h-24 w-24 text-gold drop-shadow-[0_0_18px_rgba(255,201,60,0.45)]" title="" />
       <p
         className="mono-label text-xs text-gold sm:text-sm"
         style={{ minHeight: "1.5em", letterSpacing: "0.42em" }}

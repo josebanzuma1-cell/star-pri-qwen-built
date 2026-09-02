@@ -1,15 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Reveal, SectionHead, SmartImg } from "./ui";
 
-type Shot = { src: string; alt: string; caption: string; tag: string };
+type Shot = { src: string; alt: string; caption: string; tag: string; w: number; h: number };
 
 const SHOTS: Shot[] = [
-  { src: "images/hero-1.jpg", alt: "Star Primary pupils in colourful uniforms playing in the school compound", caption: "Our pupils, at afternoon play", tag: "Campus life" },
-  { src: "images/pride.jpg", alt: "Pupils in neat uniforms saluting during morning flag assembly", caption: "Morning pride on the hill", tag: "Assembly" },
-  { src: "images/nursery.jpg", alt: "Nursery toddlers playing with colourful building blocks on a mat", caption: "Early years, big imaginations", tag: "Nursery" },
-  { src: "images/learning.jpg", alt: "A teacher guiding pupils at their desks in a bright classroom", caption: "Learning, guided with care", tag: "Classrooms" },
-  { src: "images/hero-2.jpg", alt: "Nursery children smiling with colourful face paint at a celebration", caption: "Celebration day", tag: "Events" },
-  { src: "images/compound.jpg", alt: "Wide view of the Star Schools compound on Ndikutamadda Hill", caption: "Our compound, top of the hill", tag: "Campus" },
+  { src: "images/tour-nature.jpg", alt: "A long line of Star pupils in lilac and navy uniform leaning on a rail during an educational tour", caption: "Educational tour", tag: "Tours", w: 640, h: 427 },
+  { src: "images/dance-drums.jpg", alt: "Pupils dancing in a classroom while a classmate plays a traditional drum", caption: "Drums, and everybody moves", tag: "Dance & drama", w: 640, h: 427 },
+  { src: "images/cooking-chef.jpg", alt: "A cookery club pupil in apron and chef hat holding a plate of chapati she has made", caption: "Her own chapati", tag: "Cookery club", w: 640, h: 960 },
+  { src: "images/swim-poolside.jpg", alt: "A row of Star pupils sitting along the pool edge, kicking up a wall of spray", caption: "Swimming gala", tag: "Swimming", w: 640, h: 424 },
+  { src: "images/football-juniors.jpg", alt: "Young Star pupils in red kit dribbling between cones while their coach watches", caption: "First touches", tag: "Football", w: 640, h: 427 },
+  { src: "images/cooking-team.jpg", alt: "Four cookery club pupils in maroon aprons and chef hats holding a plate of chapati together", caption: "The cookery club", tag: "Clubs", w: 640, h: 427 },
+  { src: "images/netball.jpg", alt: "A Star pupil throwing a netball during a training drill with her coach looking on", caption: "Netball practice", tag: "Netball", w: 640, h: 427 },
+  { src: "images/dance-class.jpg", alt: "A teacher guiding pupils through a dance routine with their hands raised in a classroom", caption: "Learning the routine", tag: "Dance & drama", w: 640, h: 427 },
+  { src: "images/tour-farm.jpg", alt: "Star pupils gathered around a demonstration garden of seedlings on a study tour", caption: "Study tour, seedling beds", tag: "Tours", w: 640, h: 427 },
+  { src: "images/swim-lesson.jpg", alt: "A swimming instructor guiding four young pupils across the pool", caption: "Guided, never rushed", tag: "Swimming", w: 640, h: 424 },
+  { src: "images/health-checkup.jpg", alt: "A health worker checking a young pupil at the school medical kit while a classmate waits", caption: "Health checks on site", tag: "Welfare", w: 640, h: 427 },
+  { src: "images/campus.jpg", alt: "The violet and pink Star Primary School day and boarding block against a blue sky", caption: "Our compound, top of the hill", tag: "Campus", w: 640, h: 366 },
 ];
 
 function LazyImage({ shot, onClick }: { shot: Shot; onClick: () => void }) {
@@ -25,8 +31,8 @@ function LazyImage({ shot, onClick }: { shot: Shot; onClick: () => void }) {
           src={shot.src}
           alt={shot.alt}
           loading="lazy"
-          width={640}
-          height={shot.src.includes("compound") || shot.src.includes("learning") || shot.src.includes("nursery") || shot.src.includes("hero-2") ? 480 : 780}
+          width={shot.w}
+          height={shot.h}
           onLoad={() => setLoaded(true)}
           className={`block w-full ${loaded ? "loaded" : "loading"}`}
         />

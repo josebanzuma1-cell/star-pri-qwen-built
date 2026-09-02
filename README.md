@@ -67,27 +67,40 @@ endpoint. To go live:
 
 Admin passcode (`starlight`) is a demo gate — replace with real auth server-side.
 
-## Images — blank slots, ready for your real photos
+## Images & film
 
-There are **no AI or generated images** in this project. Every photo location is a clean blank
-slot (`SmartImg` in `src/components/ui.tsx`) that shows a quiet "photo coming soon" placeholder
-until you add the real thing.
+The school's own photographs are in `public/images/`, and the co-curricular film
+is at `public/video/co-curricular.mp4` (1280x720, 110s, 22 MB, shipped at its
+original quality — it is not re-encoded by the build).
 
-To add a photo, drop the file into `public/images/` with the matching name — zero code changes:
+| Area | Files |
+| ---- | ----- |
+| Hero collage | `pupils.jpg` · `swim-joy.jpg` · `campus.jpg` |
+| Hero film | `video/co-curricular.mp4`, poster `swim-poolside.jpg` |
+| Tours | `tour-nature.jpg` · `tour-farm.jpg` |
+| Swimming | `swim-poolside.jpg` · `swim-lesson.jpg` · `swim-cap.jpg` · `swim-board.jpg` |
+| Dance & drama | `dance-drums.jpg` · `dance-class.jpg` |
+| Cookery club | `cooking-club.jpg` · `cooking-team.jpg` · `cooking-chef.jpg` |
+| Sports | `football-juniors.jpg` · `football-seniors.jpg` · `netball.jpg` · `netball-pass.jpg` |
+| Welfare | `health-checkup.jpg` · `health-field.jpg` |
+| About | `dance-class.jpg` |
 
-| File               | Shows up in                     |
-| ------------------ | ------------------------------- |
-| `hero-1.jpg`       | Hero main postcard (+ preload*) |
-| `hero-2.jpg`       | Hero postcard + gallery          |
-| `learning.jpg`     | About section + gallery          |
-| `nursery.jpg`      | Gallery (early years)            |
-| `pride.jpg`        | Gallery (flag assembly)          |
-| `compound.jpg`     | Hero postcard + gallery          |
+Gallery captions, tags and alt text live in `src/components/Gallery.tsx` (`SHOTS`);
+the hero collage is `CARDS` in `src/components/Hero.tsx`. `SmartImg` still falls
+back to a quiet placeholder if a file is ever missing, so a wrong filename
+degrades rather than breaks.
 
-\* Re-enable the preload line in `index.html` (commented, ready) once `hero-1.jpg` exists.
+## Badge & colours
 
-Captions/alt text live in `src/components/Hero.tsx` and `src/components/Gallery.tsx`.
+The crest is drawn as vector art in `src/components/Logo.tsx` — roundel, gold
+crown, open book with pen and pencil, and the motto on a ribbon — rather than
+traced from the 405px raster, so it stays sharp from the 40px nav mark upward.
 
+The palette is taken from the school itself: the violet and magenta of the main
+block, the ochre of its columns, the lilac of the uniform shirts and the gold of
+the crown. The tokens in `src/index.css` keep their original navy-era names so
+every existing class still works — only the hues moved, so read `navy` as "the
+deep school violet".
 ## Editing content
 
 - **Stats/counters** (demo figures): `src/components/About.tsx` → `STATS`.
