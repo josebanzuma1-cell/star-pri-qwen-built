@@ -49,7 +49,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-12 px-5 py-16 sm:px-8 md:grid-cols-12">
         <div className="md:col-span-5">
           <a href="#top" onClick={go("top")} className="flex items-center gap-3" aria-label="Back to top">
-            <Logo className="h-14 w-14 shrink-0 text-gold" title="" />
+            <Logo className="h-16 w-16 shrink-0" title="" />
             <span className="leading-none">
               <span className="font-display block text-lg font-bold text-cream">
                 Star <span className="italic text-gold">Schools</span>

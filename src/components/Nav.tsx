@@ -82,8 +82,7 @@ export default function Nav() {
         <nav className="mx-auto flex max-w-[1440px] items-center justify-between gap-6 px-5 py-4 sm:px-8" aria-label="Primary">
           <a href="#top" onClick={go("top")} className="group flex items-center gap-3" aria-label="Star Primary & Nursery School Namasuba — back to top">
             <Logo
-              className="h-10 w-10 shrink-0 text-gold transition-transform duration-500 group-hover:scale-105"
-              showRibbon={false}
+              className="h-11 w-11 shrink-0 transition-transform duration-500 group-hover:scale-105"
               title=""
             />
             <span className="leading-none">

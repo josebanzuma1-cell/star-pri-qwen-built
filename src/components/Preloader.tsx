@@ -77,7 +77,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
       <p className="sr-only" role="status">
         Loading Star Primary &amp; Nursery School Namasuba
       </p>
-      <Logo className="h-24 w-24 text-gold drop-shadow-[0_0_18px_rgba(255,201,60,0.45)]" title="" />
+      <Logo className="h-24 w-24 drop-shadow-[0_0_26px_rgba(255,201,60,0.32)]" title="" />
       <p
         className="mono-label text-xs text-gold sm:text-sm"
         style={{ minHeight: "1.5em", letterSpacing: "0.42em" }}
