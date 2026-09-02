@@ -465,10 +465,67 @@ section {
   object-fit: cover;
   filter: saturate(1.05) contrast(1.02);
 }
+@media (max-width: 639px) {
+  /* the hero is portrait on a phone, so the landscape master is carried as a
+     centred vertical crop rather than letterboxed into a thin strip */
+  .hero-video {
+    object-position: center 42%;
+  }
+  /* held behind its poster until tapped: dim it so the play control reads */
+  .hero-video.is-held {
+    filter: saturate(0.95) contrast(1) brightness(0.82);
+  }
+}
 
-/* The frame itself is left unwashed. */
-.hero-scrim {
+/* Postcard reels: photographs cover a fixed 3:2 window, so they are cropped
+   at most, never squeezed. The swap is a slow swipe — out to the left, in
+   from the right. */
+.hero-shot {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
   opacity: 0;
+  transform: translateX(16%);
+  transition: opacity 1.45s ease, transform 1.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hero-shot.is-on {
+  opacity: 1;
+  transform: none;
+  /* the slow push-in rides on `scale`, not `transform` — a transform
+     animation here would override the swipe outright, which is exactly what
+     the inherited Ken Burns rule was doing */
+  animation: shot-drift 15s ease-in-out infinite alternate;
+}
+@keyframes shot-drift {
+  from {
+    scale: 1;
+  }
+  to {
+    scale: 1.07;
+  }
+}
+.hero-shot.is-prev {
+  opacity: 0;
+  transform: translateX(-13%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-shot {
+    transition: none;
+  }
+  .hero-shot.is-on {
+    animation: none;
+  }
+}
+
+/* A breath of violet over the footage — enough to seat the film in the page
+   without washing it out. */
+.hero-scrim {
+  opacity: 0.34;
+  background:
+    linear-gradient(to right, rgba(30, 7, 45, 0.95) 0%, rgba(30, 7, 45, 0.62) 46%, rgba(30, 7, 45, 0.22) 100%),
+    linear-gradient(to bottom, rgba(30, 7, 45, 0.55) 0%, rgba(30, 7, 45, 0) 44%, rgba(30, 7, 45, 0.8) 100%);
 }
 
 /* Readability comes from here instead: a veil pooled behind the copy that

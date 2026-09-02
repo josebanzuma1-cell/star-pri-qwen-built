@@ -1,54 +1,73 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { gsap, reducedMotion } from "../lib/gsap";
 import { Magnetic, SmartImg, StarSparkles } from "./ui";
 
-const CARDS = [
+/**
+ * Each postcard cycles its own little reel. Frames are a fixed 3:2 and the
+ * photographs fill them with object-cover, so nothing is ever squeezed to fit
+ * — most of these are 3:2 already and crop by nothing at all.
+ */
+type Shot = { src: string; alt: string; caption: string; w: number; h: number };
+
+const CARDS: {
+  className: string;
+  tilt: string;
+  speed: number;
+  z: number;
+  eager: boolean;
+  offset: number;
+  shots: Shot[];
+}[] = [
   {
-    src: "images/pupils.jpg",
-    alt: "Two Star Primary pupils in lilac shirts and navy jumpers, arms round each other, smiling",
-    caption: "Our pupils, on the hill",
     className: "right-[2%] top-0 w-[54%] sm:w-[52%]",
     tilt: "-4deg",
     speed: 0.5,
     z: 10,
     eager: true,
+    offset: 0,
+    shots: [
+      { src: "images/pupils.jpg", w: 1800, h: 1236, caption: "Our pupils, on the hill", alt: "Two Star Primary pupils in lilac shirts and navy jumpers, arms round each other, smiling" },
+      { src: "images/dance-class.jpg", w: 1500, h: 1000, caption: "Dance & drama", alt: "A teacher leading a classroom of Star pupils through a dance routine" },
+      { src: "images/cooking-team.jpg", w: 1500, h: 1000, caption: "Cookery club", alt: "Four Star pupils in chef hats and maroon aprons holding a plate of chapati" },
+    ],
   },
   {
-    src: "images/swim-joy.jpg",
-    alt: "A Star pupil beaming over a yellow kickboard at the edge of the school pool",
-    caption: "Swimming lessons",
     className: "left-0 top-[34%] w-[46%] sm:w-[42%]",
     tilt: "5deg",
     speed: 1,
     z: 20,
     eager: false,
+    offset: 2400,
+    shots: [
+      { src: "images/swim-joy.jpg", w: 1500, h: 1000, caption: "Swimming lessons", alt: "A Star pupil beaming over a yellow kickboard at the edge of the school pool" },
+      { src: "images/netball.jpg", w: 1500, h: 1000, caption: "Netball", alt: "Star pupils passing a netball on the school field" },
+      { src: "images/swim-lesson.jpg", w: 2048, h: 1356, caption: "Learning to swim", alt: "A coach guiding young swimmers across the pool" },
+    ],
   },
   {
-    src: "images/campus.jpg",
-    alt: "The violet and pink Star Primary School day and boarding block on Ndikutamadda Hill",
-    caption: "Top of Ndikutamadda Hill",
     className: "bottom-0 right-[6%] w-[44%] sm:w-[40%]",
     tilt: "-2deg",
     speed: 1.5,
     z: 30,
     eager: false,
+    offset: 4800,
+    shots: [
+      { src: "images/campus.jpg", w: 2025, h: 1159, caption: "Top of Ndikutamadda Hill", alt: "The violet and pink Star Primary School day and boarding block" },
+      { src: "images/football-juniors.jpg", w: 1500, h: 1000, caption: "Football training", alt: "Young Star footballers dribbling through cones on the school field" },
+      { src: "images/tour-nature.jpg", w: 1800, h: 1200, caption: "Nature walks", alt: "Star pupils out on a nature walk beyond the school grounds" },
+    ],
   },
 ];
 
-/* The school's own key art opens the hero, then hands over to the film. Two
-   cards, so both messages land before anything moves. */
+/* The school's own key art opens the hero, then hands over to the film. */
 const PREROLL = [
-  {
-    src: "images/banner-admission.jpg",
-    alt: "Star Primary & Nursery School — Education is Light. Admission is ongoing, call 0702 553 309",
-  },
-  {
-    src: "images/banner-resume.jpg",
-    alt: "Excited to resume school — two Star pupils in lilac and navy uniform",
-  },
+  { src: "images/banner-admission.jpg", alt: "Star Primary & Nursery School — Education is Light" },
+  { src: "images/banner-resume.jpg", alt: "Excited to resume school — two Star pupils in uniform" },
 ];
 
 const CARD_MS = 2600;
+const SHOT_MS = 6200; // slow — the reel should drift, not flick
+const PHRASE_MS = 3600;
 
 /* Cycled over the film once it takes the frame. */
 const PHRASES = [
@@ -58,17 +77,27 @@ const PHRASES = [
   "Swimming, drums, football, dance & drama",
 ];
 
-const PHRASE_MS = 3600;
-
 export default function Hero({ ready }: { ready: boolean }) {
   const rootRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const reduced = reducedMotion();
+
   /* 0,1 = the two title cards · 2 = the film */
   const [stage, setStage] = useState(0);
   const [phrase, setPhrase] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [isPhone, setIsPhone] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches
+  );
 
-  /* Hand the backdrop from key art to footage. Reduced motion keeps the first
-     card and never starts the film. */
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const on = () => setIsPhone(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
+  /* Hand the backdrop from key art to footage. */
   useEffect(() => {
     if (!ready || reduced) return;
     const a = window.setTimeout(() => setStage(1), CARD_MS);
@@ -84,6 +113,19 @@ export default function Hero({ ready }: { ready: boolean }) {
     const id = window.setInterval(() => setPhrase((p) => (p + 1) % PHRASES.length), PHRASE_MS);
     return () => window.clearInterval(id);
   }, [stage, reduced]);
+
+  /* On a phone the film is held behind its poster: 22MB is not something to
+     spend of someone's bundle without being asked. */
+  const play = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    /* Dismiss the control on the tap, not on the first decoded frame — over a
+       slow connection play() can take seconds to settle, and leaving the
+       button sitting there reads as though the tap never landed. Only put it
+       back if playback is actually refused. */
+    setPlaying(true);
+    void v.play().catch(() => setPlaying(false));
+  }, []);
 
   /* Intro: line-mask reveal + staggered fade once the preloader lifts. */
   useEffect(() => {
@@ -123,6 +165,8 @@ export default function Hero({ ready }: { ready: boolean }) {
       });
   }, []);
 
+  const showPlayButton = isPhone && stage >= 2 && !playing && !reduced;
+
   return (
     <section
       id="top"
@@ -130,15 +174,13 @@ export default function Hero({ ready }: { ready: boolean }) {
       className="beams relative flex min-h-svh items-center overflow-hidden bg-navy-3 pt-28 pb-24 sm:pt-32"
       aria-label="Welcome"
     >
-      {/* Backdrop: the school's key art, then the co-curricular film. Muted and
-          inert so it can autoplay; the frame is left unwashed — legibility
-          comes from a veil behind the copy alone. */}
-      <div className="hero-backdrop absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div className="hero-backdrop absolute inset-0 overflow-hidden">
         {PREROLL.map((card, i) => (
           <img
             key={card.src}
             src={card.src}
             alt=""
+            aria-hidden="true"
             width={851}
             height={315}
             className={`hero-stage hero-stage-card ${stage === i ? "is-on" : ""}`}
@@ -148,18 +190,21 @@ export default function Hero({ ready }: { ready: boolean }) {
         ))}
         {stage >= 2 && (
           <video
-            className="hero-stage hero-video is-on"
+            ref={videoRef}
+            className={`hero-stage hero-video is-on ${isPhone && !playing ? "is-held" : ""}`}
             src="video/co-curricular.mp4"
-            poster="images/banner-admission.jpg"
-            autoPlay
+            poster="images/swim-poolside.jpg"
+            autoPlay={!isPhone && !reduced}
             muted
             loop
             playsInline
-            preload="auto"
+            preload={isPhone ? "none" : "auto"}
             tabIndex={-1}
+            aria-label="Co-curricular life at Star Primary School"
+            onPlaying={() => setPlaying(true)}
           />
         )}
-        <div className="hero-scrim absolute inset-0" />
+        <div className="hero-scrim absolute inset-0" aria-hidden="true" />
       </div>
 
       <StarSparkles count={16} />
@@ -244,33 +289,32 @@ export default function Hero({ ready }: { ready: boolean }) {
           </ul>
         </div>
 
-        {/* ---------- postcard collage ---------- */}
+        {/* ---------- postcard reels ---------- */}
         <div className="relative h-[430px] sm:h-[540px] lg:col-span-5 lg:h-[620px]">
           {CARDS.map((card) => (
-            <div key={card.src} className={`absolute ${card.className}`} data-speed={card.speed} style={{ zIndex: card.z }}>
-              <figure
-                className="postcard floaty relative"
-                style={{ "--tilt": card.tilt, transform: `rotate(${card.tilt})` } as CSSProperties}
-              >
-                <span className="tape" aria-hidden="true" />
-                <div className="kenburns overflow-hidden bg-cream-2">
-                  <SmartImg
-                    src={card.src}
-                    alt={card.alt}
-                    width={520}
-                    height={card.src === "images/pupils.jpg" ? 420 : 400}
-                    loading={card.eager ? "eager" : "lazy"}
-                    className="block w-full"
-                  />
-                </div>
-                <figcaption className="font-display absolute inset-x-0 bottom-2.5 px-2 text-center text-[12px] italic text-navy/80 sm:text-[13px]">
-                  {card.caption}
-                </figcaption>
-              </figure>
+            <div key={card.className} className={`absolute ${card.className}`} data-speed={card.speed} style={{ zIndex: card.z }}>
+              <Reel card={card} running={stage >= 2 && !reduced} />
             </div>
           ))}
         </div>
       </div>
+
+      {showPlayButton && (
+        <button
+          onClick={play}
+          className="hero-play absolute bottom-24 right-5 z-20 flex items-center gap-2.5 rounded-full border border-gold/45 bg-navy-3/85 py-2.5 pl-2.5 pr-4 text-cream backdrop-blur-md transition hover:border-gold"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-navy">
+            <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4" fill="currentColor" aria-hidden="true">
+              <path d="M8 5.5v13l11-6.5z" />
+            </svg>
+          </span>
+          <span className="text-left">
+            <span className="mono-label block text-[9px] text-gold">Play the film</span>
+            <span className="mono-label block text-[8px] text-cream/50">22 MB · sound off</span>
+          </span>
+        </button>
+      )}
 
       {/* Motto band over the film. Cycles, so it is hidden from screen readers
           rather than announcing itself every few seconds. */}
@@ -280,24 +324,18 @@ export default function Hero({ ready }: { ready: boolean }) {
             <path d="M12 1.8 L14.6 9.4 L22.2 12 L14.6 14.6 L12 22.2 L9.4 14.6 L1.8 12 L9.4 9.4 Z" fill="currentColor" />
           </svg>
           <p className="relative min-w-0 flex-1 overflow-hidden">
-            <span key={phrase} className="hero-band-line font-display block truncate text-[13px] italic text-cream sm:text-base">
+            <span key={phrase} className="hero-band-line font-display block truncate text-[13px] italic text-cream sm:text-lg">
               {PHRASES[phrase]}
             </span>
           </p>
           <span className="hidden shrink-0 gap-1.5 sm:flex">
             {PHRASES.map((p, i) => (
-              <span
-                key={p}
-                className={`h-1 rounded-full transition-all duration-500 ${
-                  i === phrase ? "w-5 bg-gold" : "w-1.5 bg-cream/25"
-                }`}
-              />
+              <span key={p} className={`h-1 rounded-full transition-all duration-500 ${i === phrase ? "w-5 bg-gold" : "w-1.5 bg-cream/25"}`} />
             ))}
           </span>
         </div>
       </div>
 
-      {/* scroll cue */}
       <div className="hero-el absolute bottom-20 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 sm:flex" aria-hidden="true">
         <span className="mono-label text-[9px] text-cream/50">Scroll</span>
         <span className="relative block h-10 w-px overflow-hidden bg-cream/15">
@@ -306,5 +344,55 @@ export default function Hero({ ready }: { ready: boolean }) {
         <style>{`@keyframes scrollcue { 0% { transform: translateY(-100%);} 100% { transform: translateY(300%);} }`}</style>
       </div>
     </section>
+  );
+}
+
+/* One postcard, drifting slowly through its own set of photographs. */
+function Reel({ card, running }: { card: (typeof CARDS)[number]; running: boolean }) {
+  const [i, setI] = useState(0);
+  const [prev, setPrev] = useState(-1);
+
+  useEffect(() => {
+    if (!running) return;
+    let interval = 0;
+    const start = window.setTimeout(() => {
+      const advance = () =>
+        setI((n) => {
+          setPrev(n);
+          return (n + 1) % card.shots.length;
+        });
+      advance();
+      interval = window.setInterval(advance, SHOT_MS);
+    }, card.offset);
+    return () => {
+      window.clearTimeout(start);
+      window.clearInterval(interval);
+    };
+  }, [running, card.offset, card.shots.length]);
+
+  return (
+    <figure
+      className="postcard floaty relative"
+      style={{ "--tilt": card.tilt, transform: `rotate(${card.tilt})` } as CSSProperties}
+    >
+      <span className="tape" aria-hidden="true" />
+      {/* fixed 3:2 window — the photographs cover it, never stretch to it */}
+      <div className="relative aspect-[3/2] overflow-hidden bg-cream-2">
+        {card.shots.map((shot, n) => (
+          <SmartImg
+            key={shot.src}
+            src={shot.src}
+            alt={n === i ? shot.alt : ""}
+            width={shot.w}
+            height={shot.h}
+            loading={card.eager && n === 0 ? "eager" : "lazy"}
+            className={`hero-shot ${n === i ? "is-on" : ""} ${n === prev ? "is-prev" : ""}`}
+          />
+        ))}
+      </div>
+      <figcaption className="font-display absolute inset-x-0 bottom-2.5 px-2 text-center text-[12px] italic text-navy/80 sm:text-[13px]">
+        {card.shots[i].caption}
+      </figcaption>
+    </figure>
   );
 }
