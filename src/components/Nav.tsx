@@ -80,14 +80,14 @@ export default function Nav() {
         </div>
 
         <nav className="mx-auto flex max-w-[1440px] items-center justify-between gap-6 px-5 py-4 sm:px-8" aria-label="Primary">
-          <a href="#top" onClick={go("top")} className="group flex items-center gap-3" aria-label="Star Primary & Nursery School Namasuba — back to top">
+          <a href="#top" onClick={go("top")} className="group flex items-center gap-3" aria-label="Star Nursery & Primary School Namasuba — back to top">
             <Logo
               className="h-11 w-11 shrink-0 transition-transform duration-500 group-hover:scale-105"
               title=""
             />
             <span className="leading-none">
-              <span className="font-display block text-[15px] font-bold tracking-wide text-cream">
-                Star <span className="italic text-gold">Schools</span>
+              <span className="font-display block max-w-[9.5rem] text-[12.5px] font-bold leading-tight tracking-wide text-cream sm:max-w-none sm:text-[14px]">
+                Star <span className="italic text-gold">Nursery &amp; Primary</span> School
               </span>
               <span className="mono-label mt-1 block text-[8.5px] text-cream/55">Namasuba • Wakiso</span>
             </span>

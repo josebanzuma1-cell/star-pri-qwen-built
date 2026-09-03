@@ -12,33 +12,35 @@
 export default function Logo({
   className = "",
   plate = true,
-  title = "Star Primary & Nursery School Namasuba",
+  title = "Star Nursery & Primary School Namasuba",
 }: {
   className?: string;
   /** Cream disc behind the crest — needed on the dark violet surfaces. */
   plate?: boolean;
   title?: string;
 }) {
-  const img = (
-    <img
-      src="images/badge.png"
-      width={211}
-      height={228}
-      alt={title}
-      className={plate ? "h-full w-full object-contain" : className}
-      loading="eager"
-      decoding="async"
-    />
-  );
-
-  if (!plate) return img;
+  if (!plate) {
+    return (
+      <img
+        src="images/badge.png"
+        width={211}
+        height={228}
+        alt={title}
+        className={className}
+        loading="eager"
+        decoding="async"
+      />
+    );
+  }
 
   return (
-    <span
-      className={`inline-flex items-center justify-center rounded-full bg-cream p-[9%] shadow-[0_6px_20px_-8px_rgba(20,6,32,0.75)] ring-1 ring-cream/40 ${className}`}
-      role={title ? undefined : "presentation"}
-    >
-      {img}
+    /* The crest is positioned by insets rather than sized with height:100%.
+       Percentage sizing on a flex child resolved to zero here — the mark
+       vanished into a blank disc in the footer and the preloader while
+       surviving in the nav — whereas insets resolve against this element's
+       own padding box, which always has a definite size. */
+    <span className={`badge-plate shrink-0 shadow-[0_6px_20px_-8px_rgba(20,6,32,0.75)] ring-1 ring-cream/40 ${className}`}>
+      <img src="images/badge.png" width={211} height={228} alt={title} loading="eager" decoding="async" />
     </span>
   );
 }

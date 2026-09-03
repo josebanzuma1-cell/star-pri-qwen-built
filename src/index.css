@@ -557,15 +557,35 @@ section {
   }
 }
 
-/* Motto band across the foot of the hero. */
-.hero-band {
-  background: linear-gradient(to top, rgba(30, 7, 45, 0.96) 0%, rgba(30, 7, 45, 0.7) 55%, rgba(30, 7, 45, 0) 100%);
+/* Cycling headline. These are sentences rather than a two-word motto, so the
+   type is sized well below the old display clamp and the lines are allowed
+   to wrap. No per-line overflow mask: a mask sized for one line guillotines
+   the second half of anything that wraps, which is exactly what it did to
+   "Become a Parent Ambassador". The reveal is a rise and a fade instead, and
+   nothing can be clipped by it.                                          */
+.h-cycle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 3.5vw, 3.05rem);
+  line-height: 1.12;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
 }
-@keyframes band-in {
+.cycle-line {
+  display: block;
+}
+.cycle-line > span {
+  display: block;
+  animation: cycle-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.cycle-line:nth-child(2) > span {
+  animation-delay: 0.13s;
+}
+@keyframes cycle-in {
   from {
     opacity: 0;
-    transform: translateY(0.75em);
-    filter: blur(7px);
+    transform: translateY(0.34em);
+    filter: blur(6px);
   }
   to {
     opacity: 1;
@@ -573,8 +593,10 @@ section {
     filter: blur(0);
   }
 }
-.hero-band-line {
-  animation: band-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+@media (prefers-reduced-motion: reduce) {
+  .cycle-line > span {
+    animation: none;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-stage {
@@ -590,47 +612,27 @@ section {
   }
 }
 
-/* ---------- join modal: phone bottom sheet ----------
-   The sheet is always full height and sits partly below the fold; the peek
-   state is a transform, not a height change, so the drag can follow the
-   finger and settle without relayout.                                    */
-.join-sheet {
-  height: min(94svh, 100svh - 0.75rem);
-  /* percentage translate resolves against the sheet's own height, so the
-     peek needs no measuring and is correct on the very first paint */
-  transform: translateY(34%);
-  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
+/* ---------- school badge on its cream plate ----------
+   The crest is placed by insets with width/height forced to auto: an <img>
+   carries its width and height attributes as presentational hints, and those
+   were beating percentage sizing, which is how the mark ended up collapsed
+   to nothing inside the footer and preloader discs.                      */
+.badge-plate {
+  position: relative;
+  display: inline-block;
+  border-radius: 9999px;
+  background: var(--color-cream);
 }
-.join-sheet.is-expanded {
-  transform: translateY(0);
-}
-.join-sheet.is-dragging {
-  transition: none;
-}
-/* the grab area must not also pan the page */
-.join-grip {
-  touch-action: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .join-sheet {
-    transition: none;
-  }
-}
-
-/* ---------- join modal: size to the *visible* phone viewport ----------
-   position:fixed inset-0 resolves against the large viewport, so on a phone
-   showing its URL bar the foot of the modal sits behind browser chrome.
-   100svh is the smallest (chrome-expanded) height, so the panel is always
-   fully on screen; the safe-area insets keep it clear of the home indicator. */
-.join-dialog {
-  height: 100svh;
-  padding-block: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-bottom));
-}
-@media (min-width: 640px) {
-  .join-dialog {
-    padding-block: 2rem;
-  }
+.badge-plate > img {
+  position: absolute;
+  inset: 0;
+  /* explicit percentages, not auto: on a replaced element `width: auto` means
+     the intrinsic width, which preflight's max-width:100% then clamps to the
+     disc — leaving the height to overflow down the aspect ratio */
+  width: 78%;
+  height: 78%;
+  margin: auto;
+  object-fit: contain;
 }
 
 /* ---------- join modal: touch scrolling for the form body ----------

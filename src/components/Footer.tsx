@@ -51,10 +51,10 @@ export default function Footer() {
           <a href="#top" onClick={go("top")} className="flex items-center gap-3" aria-label="Back to top">
             <Logo className="h-16 w-16 shrink-0" title="" />
             <span className="leading-none">
-              <span className="font-display block text-lg font-bold text-cream">
-                Star <span className="italic text-gold">Schools</span>
+              <span className="font-display block text-lg font-bold leading-tight text-cream">
+                Star <span className="italic text-gold">Nursery &amp; Primary</span> School
               </span>
-              <span className="mono-label mt-1 block text-[9px] text-cream/50">Primary & Nursery • Namasuba</span>
+              <span className="mono-label mt-1 block text-[9px] text-cream/50">Namasuba • Wakiso</span>
             </span>
           </a>
           <p className="mt-6 max-w-sm text-sm leading-relaxed text-cream/60">

@@ -67,14 +67,15 @@ const PREROLL = [
 
 const CARD_MS = 2600;
 const SHOT_MS = 6200; // slow — the reel should drift, not flick
-const PHRASE_MS = 3600;
+const PHRASE_MS = 4200;
 
-/* Cycled over the film once it takes the frame. */
-const PHRASES = [
-  "Education is Light",
-  "Become a Parent Ambassador — earn a fees credit",
-  "Registration is open — interviews the same day",
-  "Swimming, drums, football, dance & drama",
+/* The headline itself cycles these over the film. The first is the motto, so
+   the page still opens on the line the school leads with. */
+const PHRASES: { lead: string; accent: string }[] = [
+  { lead: "Education is", accent: "Light." },
+  { lead: "Become a Parent Ambassador,", accent: "earn a fees credit." },
+  { lead: "Registration is open —", accent: "interviews the same day." },
+  { lead: "Swimming, drums, football,", accent: "dance & drama." },
 ];
 
 export default function Hero({ ready }: { ready: boolean }) {
@@ -231,13 +232,21 @@ export default function Hero({ ready }: { ready: boolean }) {
             </span>
           </div>
 
-          <h1 className="h-display mt-7 text-cream">
-            <span className="mask-line">
-              <span>Education is</span>
+          {/* Driven by CSS rather than the GSAP intro: a timeline that never
+              runs would strand the headline off-screen, and this one has to
+              survive every reload. */}
+          <h1 className="h-cycle mt-7 text-cream">
+            <span className="sr-only">
+              Star Nursery &amp; Primary School Namasuba — Education is Light
             </span>
-            <span className="mask-line">
-              <span className="font-display italic text-gold drop-shadow-[0_0_34px_rgba(255,201,60,0.35)]">
-                Light.
+            <span key={phrase} aria-hidden="true">
+              <span className="cycle-line">
+                <span>{PHRASES[phrase].lead}</span>
+              </span>
+              <span className="cycle-line">
+                <span className="italic text-gold drop-shadow-[0_0_34px_rgba(255,201,60,0.35)]">
+                  {PHRASES[phrase].accent}
+                </span>
               </span>
             </span>
           </h1>
@@ -316,27 +325,7 @@ export default function Hero({ ready }: { ready: boolean }) {
         </button>
       )}
 
-      {/* Motto band over the film. Cycles, so it is hidden from screen readers
-          rather than announcing itself every few seconds. */}
-      <div className="hero-band absolute inset-x-0 bottom-0 z-10" aria-hidden="true">
-        <div className="mx-auto flex max-w-[1440px] items-center gap-3.5 px-5 py-4 sm:gap-4 sm:px-8">
-          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-gold sm:h-4 sm:w-4">
-            <path d="M12 1.8 L14.6 9.4 L22.2 12 L14.6 14.6 L12 22.2 L9.4 14.6 L1.8 12 L9.4 9.4 Z" fill="currentColor" />
-          </svg>
-          <p className="relative min-w-0 flex-1 overflow-hidden">
-            <span key={phrase} className="hero-band-line font-display block truncate text-[13px] italic text-cream sm:text-lg">
-              {PHRASES[phrase]}
-            </span>
-          </p>
-          <span className="hidden shrink-0 gap-1.5 sm:flex">
-            {PHRASES.map((p, i) => (
-              <span key={p} className={`h-1 rounded-full transition-all duration-500 ${i === phrase ? "w-5 bg-gold" : "w-1.5 bg-cream/25"}`} />
-            ))}
-          </span>
-        </div>
-      </div>
-
-      <div className="hero-el absolute bottom-20 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 sm:flex" aria-hidden="true">
+      <div className="hero-el absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 sm:flex" aria-hidden="true">
         <span className="mono-label text-[9px] text-cream/50">Scroll</span>
         <span className="relative block h-10 w-px overflow-hidden bg-cream/15">
           <span className="absolute left-0 top-0 h-4 w-px animate-[scrollcue_1.8s_ease-in-out_infinite] bg-gold" />
