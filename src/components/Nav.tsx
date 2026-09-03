@@ -110,9 +110,20 @@ export default function Nav() {
           </ul>
 
           <div className="flex items-center gap-3">
-            <a href="#ambassador" onClick={go("ambassador")} className="btn btn-gold hidden !px-5 !py-2.5 text-[10px] sm:inline-flex">
-              Join as Ambassador
-            </a>
+            {/* Held off phones: the masthead cannot carry a badge, the full
+                school name and a text button in ~326px — everything ends up at
+                its minimum width and still wraps. The route is not lost, since
+                the hero and the menu both carry it.
+
+                The visibility lives on this wrapper rather than on the link,
+                because `.btn` sets display:inline-flex in index.css, after the
+                Tailwind import — so `hidden` on the link itself was being
+                overridden by the cascade and never took effect. */}
+            <span className="hidden sm:inline-flex">
+              <a href="#ambassador" onClick={go("ambassador")} className="btn btn-gold !px-5 !py-2.5 text-[10px]">
+                Join as Ambassador
+              </a>
+            </span>
             <button
               onClick={() => setOpen(true)}
               className="flex h-11 w-11 flex-col items-center justify-center gap-[6px] rounded-full border border-cream/25 transition hover:border-gold lg:hidden"
